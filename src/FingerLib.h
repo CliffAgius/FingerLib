@@ -23,9 +23,12 @@
 // Uncomment the following to enable force/current sensing (Arduino Zero & Chestnut PCB Only) (Automatically enabled when using Chestnut PCB)
 //#define FORCE_SENSE
 
-
-
-
+#ifdef ADAFRUIT_FEATHER_M0
+	//Using the Feather board so include the Adafruit code for using the Servo/DC Motor board...
+	#include <Wire.h>
+	#include <Adafruit_MotorShield.h>
+	#include "utility/Adafruit_PWMServoDriver.h"
+#endif
 
 // GENERIC LIBRARIES
 #include "buffer/CircleBuff.h"
@@ -34,12 +37,12 @@
 // BOARD SPECIFIC LIBRARIES
 #if defined(ARDUINO_AVR_MEGA2560) || defined(ARDUINO_AVR_UNO)
 	//#define MYSERIAL Serial
-	#include "timers/avr_FingerTimer.h"
-#elif defined(ARDUINO_ARCH_SAMD)
+	#include "timers/avr_FingerTimer.h"	
+#elif defined(ARDUINO_ARCH_SAMD) || defined(ADAFRUIT_FEATHER_M0)
 	//#define MYSERIAL SerialUSB
 	#include "timers/samd_FingerTimer.h"
 	// Uncomment the following to enable force/current sensing (Arduino Zero & Chestnut PCB Only)
-	#define FORCE_SENSE
+	//#define FORCE_SENSE
 #else
 	#error FingerLib only supports boards using an Arduino Mega 2560, Arduino UNO, Arduino Zero, Almond PCB or Chestnut PCB.
 #endif
@@ -126,6 +129,9 @@ typedef struct _FingerPin
 {
 	uint8_t dir[2];
 	uint8_t posSns;
+#ifdef ADAFRUIT_FEATHER_M0
+	Adafruit_DCMotor *mtr;
+#endif
 #ifdef FORCE_SENSE
 	uint8_t forceSns;
 #endif

@@ -20,22 +20,27 @@
  
 // uncomment one of the following to select the board
 //#define ALMOND_BOARD
-#define CHESTNUT_BOARD
+//#define CHESTNUT_BOARD
+#define ADAFRUIT_FEATHER_M0
 
 // number of controllable fingers (number of motors)
 #if defined(ALMOND_BOARD)
-#define NUM_FINGERS 5
-#define MYSERIAL Serial
-#elif defined(CHESTNUT_BOARD)
-#define NUM_FINGERS 4
-#define MYSERIAL SerialUSB
+  #define NUM_FINGERS 5
+  #define MYSERIAL Serial
+#elif defined(CHESTNUT_BOARD) || defined(ADAFRUIT_FEATHER_M0)
+  #define NUM_FINGERS 4
+  #ifdef ADAFRUIT_FEATHER_M0
+    #define MYSERIAL Serial
+  #else
+    #define MYSERIAL SerialUSB
+  #endif
 #else
-#error 'No board selected'
+  #error 'No board selected'
 #endif
 
 // uncomment one of the following to select which hand is used
-//int handFlag = LEFT;
-int handFlag = RIGHT;
+int handFlag = LEFT;
+//int handFlag = RIGHT;
 
 // initialise Finger class to array
 Finger finger[NUM_FINGERS];
@@ -46,6 +51,12 @@ void setup()
   // and the Zero Native Port (SerialUSB.print), and is defined in FingerLib.h
   MYSERIAL.begin(38400);
   MYSERIAL.println("Started");
+
+#ifdef ADAFRUIT_FEATHER_M0
+  //Need to configure the AdaFruit Motor Shield as this will be done inside the
+  //FingerLib files...
+  AFMS.begin();
+#endif
 
   // configure all of the finger pins 
   pinAssignment();
@@ -89,6 +100,3 @@ void closeHand(void)
     finger[i].close();
   }
 }
-
-
-

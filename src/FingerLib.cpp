@@ -18,6 +18,11 @@ uint8_t _TotalAttachedFingers = 0;				// the total number of attached/configured
 Finger* fingerISRList[MAX_FINGERS] = { NULL };	// pointer to an instance of the Finger class
 bool _posCtrlTimerInit = false;					// flag to prevent multiple timer initialisations
 
+#ifdef ADAFRUIT_FEATHER_M0
+	//Using the Adafruit dc/servo board so setup the board...
+	Adafruit_MotorShield AFMS = Adafruit_MotorShield();
+	AFMS.begin();
+#endif
 
 
 ////////////////////////////// Constructor/Destructor //////////////////////////////
@@ -29,7 +34,7 @@ Finger::Finger()
 		_isActive = false;						// set current finger as inactive 
 	}
 	else
-	{
+	{  
 		_fingerIndex = _TotalFingerCount++;		// count the total number of fingers initialised 
 	}
 
@@ -81,8 +86,13 @@ uint8_t Finger::attach(uint8_t dir0, uint8_t dir1, uint8_t posSns, uint8_t force
 		_invert = inv;					// store whether to invert the finger direction
 		
 		// configure pins
+#if !defined(ADAFRUIT_FEATHER_M0)
 		pinMode(dir0, OUTPUT);		// set direction1 pin to output
 		pinMode(dir1, OUTPUT);		// set direction2 pin to output
+#else
+		//Using the Adafruit DC/Servo board to add a new motor...
+		_pin.mtr = AFMS.getMotor(_fingerIndex);
+#endif
 		pinMode(posSns, INPUT);		// set position sense pin to input
 #ifdef FORCE_SENSE
 		pinMode(forceSns, INPUT);	// set force sense pin to input
@@ -731,9 +741,9 @@ void Finger::positionController(void)
 // total duration = 439us, therefore max freq = 2kHz. We use 200Hz (5ms), where 0.5ms = motor control, 4.5ms = program runtime
 void Finger::positionController(void)
 {
-	signed int motorSpeed = 0;			// used to calculate the motor speed as a vector (±255)
+	signed int motorSpeed = 0;			// used to calculate the motor speed as a vector (ï¿½255)
 	float m;							// the proportional gradient 
-	signed int vectorise = 1;			// changes the sign '±' of the value
+	signed int vectorise = 1;			// changes the sign 'ï¿½' of the value
 
 #if defined(ARDUINO_AVR_MEGA2560)
 	int proportionalOffset = 300;
@@ -749,7 +759,7 @@ void Finger::positionController(void)
 	// speed/position line gradient
 	m = (float)(((float)_PWM.targ) / ((float)proportionalOffset));
 
-	// change the ± sign on the motorSpeed depending on required direction
+	// change the ï¿½ sign on the motorSpeed depending on required direction
 	if (_pos.error >= 0)
 		vectorise = -1;
 
@@ -831,12 +841,19 @@ void Finger::motorControl(signed int speed)
 		dir = !dir;
 	}
 
-
-
 	// write the speed to the motors
+#ifdef ADAFRUIT_FEATHER_M0
+	_pin.mtr->setSpeed(speed);
+	if(dir == OPEN)
+		_pin.mtr->run(FORWARD);
+	else if (dir == CLOSE)
+	{
+		_pin.mtr->run(BACKWARD);
+	}	
+#else
 	analogWrite(_pin.dir[dir], speed);		//write motor speed to one direction pin
 	analogWrite(_pin.dir[!dir], 0);			//write 0 to other direction pin
-	
+#endif
 }
 
 
