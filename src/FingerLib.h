@@ -27,7 +27,8 @@
 	//Using the Feather board so include the Adafruit code for using the Servo/DC Motor board...
 	#include <Wire.h>
 	#include <Adafruit_MotorShield.h>
-	#include "utility/Adafruit_PWMServoDriver.h"
+	#include "Utility/Adafruit_MS_PWMServoDriver.h"
+	static Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 #endif
 
 // GENERIC LIBRARIES

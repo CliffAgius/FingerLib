@@ -18,12 +18,6 @@ uint8_t _TotalAttachedFingers = 0;				// the total number of attached/configured
 Finger* fingerISRList[MAX_FINGERS] = { NULL };	// pointer to an instance of the Finger class
 bool _posCtrlTimerInit = false;					// flag to prevent multiple timer initialisations
 
-#ifdef ADAFRUIT_FEATHER_M0
-	//Using the Adafruit dc/servo board so setup the board...
-	Adafruit_MotorShield AFMS = Adafruit_MotorShield();
-	AFMS.begin();
-#endif
-
 
 ////////////////////////////// Constructor/Destructor //////////////////////////////
 Finger::Finger()
